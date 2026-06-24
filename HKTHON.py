@@ -1,169 +1,202 @@
-list_xe =[{    "id": "XE001",
-        "plate_name_driver": "29-lac",
-        "standard": 12,
-        "total_km": 500,
-        "total_fuel": 65,
-        "consumption_dif_index":5.0,
-        "status": "Tiêu hao cao"
-}]
+class DeliveryOrder:
 
-def   display_all_car_infor(list_xe):
-    if not list_xe:
-        print("------ Danh sách trống -------")
-    else:
-        print("\nDanh sách xe: ")
-        for item in list_xe:
-            print(f'id: {item["id"]}, plate_name_driver: {item["plate_name_driver"]}, standard: {item["standard"]}, total_km: {item["total_km"]}, total_fuel: {item["total_fuel"]}, consumption_dif_index: {item["consumption_dif_index"]}, status: {item["status"]}')
+    def __init__(self, id, customer_name, delivery_address, distance_km, cos_per_km, package_weight, extra_fee):
+        self.id = id
+        self.customer_name = customer_name
+        self.delivery_address = delivery_address
+        self.distance_km = distance_km
+        self.cos_per_km = cos_per_km
+        self.package_weight = package_weight
+        self.extra_fee = extra_fee
+        self.total_delivery_fee = 0
+        self.delivery_type = 0
 
-def check_duplicate_id(new_id):
-    for item in list_xe:
-        if item["id"]==new_id:
-            return False
-    return True
+    def calculate_delivery_fee(self):
+        # dùng để tính và cập nhật total_delivery_fee
+        fee = self.distance_km * self.cos_per_km + self.extra_fee
+        if self.package_weight > 10:
+            fee += (self.package_weight - 10) * 5000
+        self.total_delivery_fee = fee
+        return self.total_delivery_fee
 
-def  add_new_car(list_xe):
-    new_id=input("nhập vào id mới: ").strip().upper()
-    if new_id=="":
-        print("id không được để trống !")
-        return
-    found=check_duplicate_id(new_id)
-    if found==False:
-        print("id đã tồn tại !!")
-        return
-    new_plate_name_driver=input("nhập vào biễn số xe và tên tài xế cách nhau dấu (-): ").strip()
-    if new_plate_name_driver=="":
-        print("biển số xe và tên tài xế không được để trống")
+    def classify_delivery(self):
+        # dùng để phân loại và cập nhật delivery_type
+        if self.distance_km <= 5:
+            self.delivery_type = "Nội thành"
+        elif self.distance_km <= 20:
+            self.delivery_type = "Ngoại thành"
+        else:
+            self.delivery_type = "Liên tỉnh"
+        return self.delivery_type
 
-    standard=input("nhập vào định mức lý thuyết: ").strip()
- 
-    
-    total_km= input("nhập vàp tổng số km đã đi được: ")
-    total_fuel = input("nhập vào tổng số nhiên liệu tiêu thụ thực tế: ")
+    def __repr__(self):
+        return (f"[{self.id}] {self.customer_name} - {self.delivery_address} "
+                f"| {self.distance_km}km, {self.package_weight}kg "
+                f"| Phí: {self.total_delivery_fee} | Loại: {self.delivery_type}")
 
 
-    consumption_dif_index= int(input("nhập vào chỉ số chênh lệch tiêu hao; "))
+class DeliveryOrderManager:
 
-    if consumption_dif_index <0 :
-        status= "tiết kiệm"
-    elif consumption_dif_index<2 and consumption_dif_index >0 :
-        status="tiêu chuẩn"
-    elif consumption_dif_index> 2 and consumption_dif_index<8:
-        status="tiêu hao cao"
-    elif consumption_dif_index >8:
-        status="quá tải"
+    def __init__(self):
+        self.orders = []
 
+    def display_delivery_orders(self):
+        if not self.orders:
+            print("Chưa có đơn giao hàng nào.")
+            return
+        for item in self.orders:
+            print(item)
 
-    new_car={
-        "id": new_id,
-        "plate_name_driver": new_plate_name_driver,
-        "standard": standard,
-        "total_km": total_km,
-        "total_fuel": total_fuel,
-        "consumption_dif_index":consumption_dif_index,
-        "status": status
-    }
+    def add_delivery_order(self, new_order):
+        self.orders.append(new_order)
 
-    list_xe.append(new_car)
-    print("đã thêm thành công !")
+    def search_order_delivery(self, id_search):
+        for i in self.orders:
+            if i.id == id_search:
+                print("Thông tin đơn hàng:")
+                print(i)
+                return i
+        return None
 
-def update_infor_car(id_to_update):
-    for item in list_xe:
-        if item["id"] ==id_to_update:
-            standard=input("nhập vào định mức lý thuyết: ").strip()
-            total_km= input("nhập vàp tổng số km đã đi được: ")
-            total_fuel = input("nhập vào tổng số nhiên liệu tiêu thụ thực tế: ")
+    def check_id_exists(self, id_to_check):
+        for i in self.orders:
+            if i.id == id_to_check:
+                return True
+        return False
 
-            item["standard"]=standard
-            item[ "total_km"]=total_km
-            item[ "total_fuel"]=total_fuel
-            print("đã cập nhật thành công !")
-            return 
-    print("id không tồn tại !!")
+    def remove_order_by_id(self, id_to_delete):
+        for item in self.orders:
+            if item.id == id_to_delete:
+                self.orders.remove(item)
+                return True
+        return False
 
-def delete_car_by_id(list_xe):
-    id_to_remove=input("nhập vào id xe muốn xóa: ")
-    for item in list_xe:
-        if item["id"]==id_to_remove:
-            yn= input("bạn có muốn xóa nó không (Y?N): ")
-            if yn=="Y"or yn=="y":
-                list_xe=list_xe.remove(item)
-                print('đã xóa thành công !')
-                return
-            elif yn =="N"or yn =="n":
-                print("không xóa ...")
-                return
-            else :
-                print("bạn nhập sai lựa chọn rồi !!")
-                return
-    print("id không tồn tại !!")
-
-def search_car_smart(list_xe):
-    while True:
-        print("MENU SHEARCH")
-        print("1. tìm kiếm chính xác theo mã xe: ")
-        print("2. tìm kiếm gần đúng theo biển số xe hoặc tên tài xế:  ")
-        print("3. thoát  ")
-        
-        choice = input("nhập vào lựa chọn của bạn (1-3): ")
-        if choice not in ["1","2","3"]:
-            print("Vui lồng nhập lại !!")
-            continue
-        if choice =="1":
-            id_to_search=input("nhập vào id xe muốn tìm: ")
-            for item in list_xe:
-                if item["id"]==id_to_search:
-                    print(f'id: {item["id"]}, plate: {item["plate_name_driver"]}, standard: {item["standard"]}, total_km: {item["total_km"]}, total_fuel: {item["total_fuel"]}, consumption_dif_index: {item["consumption_dif_index"]}, status: {item["status"]}')
-                    return
+    def update_order(self, id_to_update):
+        order = None
+        for i in self.orders:
+            if i.id == id_to_update:
+                order = i
+                break
+        if order is None:
             print("id không tồn tại !")
+            return
 
-        if choice =="2":
-            name_to_search=input("nhập vào tên tài xế hoặc biển số xe để tìm kiếm tương đối !!")
-            for item in list_xe:
-                if name_to_search in  item["plate_name_driver"]:
-                    print(f'id: {item["id"]}, plate: {item["plate_name_driver"]}, standard: {item["standard"]}, total_km: {item["total_km"]}, total_fuel: {item["total_fuel"]}, consumption_dif_index: {item["consumption_dif_index"]}, status: {item["status"]}')
-                    return
-            print("không tồn tại tên hay biển số xe như vậy !!")
+        print("Để trống (Enter) nếu không muốn thay đổi giá trị đó.")
 
-        elif choice =="3":
-            print("thoát menu tìm kiếm !!")
-            break
+        name = input(f"Tên khách hàng [{order.customer_name}]: ").strip()
+        if name:
+            order.customer_name = name
+
+        address = input(f"Địa chỉ giao hàng [{order.delivery_address}]: ").strip()
+        if address:
+            order.delivery_address = address
+
+        dis = input(f"Khoảng cách (km) [{order.distance_km}]: ").strip()
+        if dis:
+            order.distance_km = float(dis)
+
+        cos_km = input(f"Đơn giá/km [{order.cos_per_km}]: ").strip()
+        if cos_km:
+            order.cos_per_km = float(cos_km)
+
+        pac_we = input(f"Khối lượng kiện hàng (kg) [{order.package_weight}]: ").strip()
+        if pac_we:
+            order.package_weight = float(pac_we)
+
+        ex_fee = input(f"Phụ phí [{order.extra_fee}]: ").strip()
+        if ex_fee:
+            order.extra_fee = float(ex_fee)
+
+        order.calculate_delivery_fee()
+        order.classify_delivery()
+        print("Cập nhật thành công!")
+        print(order)
+
+
+manager = DeliveryOrderManager()
 
 while True:
-    print('------ menu -------')
-    print("1. Hiển thị danh sách đội xe")
-    print("2. Bổ sung xe mới vào đội")
-    print("3. Cập nhật nhật ký hành trình")
-    print("4. xóa xe khỏi đội quản lý")
-    print("5. tìm kiếm phương tiện")
-    print("6. Thống kê hiệu suất hạm đội")
-    print("7. phân loại hiệu suất tự động")
-    print("8. Thoát")
+    print("=============MENU===========")
+    print('1. Hiển thị danh sách đơn giao hàng')
+    print("2. Thêm đơn hàng mới")
+    print("3. Cập nhật đơn giao hàng")
+    print("4. Xóa đơn giao hàng")
+    print("5. Tìm kiếm đơn giao hàng")
+    print('6. Thoát')
+    print("============================")
+    input_choice = input("Nhập vào lựa chọn của bạn: ").strip()
 
-    choice = input("nhập vào lựa chọn của bạn (1-8): ")
-    if choice not in ["1","2","3","4","5","6","7","8"]:
-        print("Vui lồng nhập lại !!")
+    if input_choice not in ["1", "2", "3", "4", "5", "6"]:
+        print("Vui lòng nhập lại !")
         continue
 
-    if choice =="1":
-        display_all_car_infor(list_xe)
+    match input_choice:
+        case "1":
+            manager.display_delivery_orders()
 
-    elif choice == "2":
-        add_new_car(list_xe)
+        case "2":
+            new_id = input("Nhập vào id mới: ").strip()
+            if new_id == "":
+                print("id không được bỏ trống !")
+                continue
+            if manager.check_id_exists(new_id):
+                print("id đã tồn tại: ")
+                continue
 
+            name = input("Nhập vào tên mới: ").strip()
+            if name == "":
+                print("name không được bỏ trống !")
+                continue
 
-    elif choice =="3":
-        id_to_update=input("nhập vào mã xe cần cập nhật nhật ký hành trìn: ")
-        update_infor_car(id_to_update)
+            address = input("Nhập vào địa chỉ giao hàng: ").strip()
+            if address == "":
+                print("address không được bỏ trống !")
+                continue
 
-    elif choice =="4":
-        delete_car_by_id(list_xe)
+            try:
+                dis = float(input("Nhập vào khoảng cách: "))
+                cos_km = float(input("Nhập vào đơn giá: "))
+                pac_we = float(input("Nhập vào khối lượng kiện hàng: "))
+                ex_fee = float(input("Nhập vào phụ phí: "))
+            except ValueError:
+                print("Giá trị nhập không hợp lệ, vui lòng nhập lại số !")
+                continue
 
-    elif choice =="5":
-        search_car_smart(list_xe)
-        
+            new_delivery_order = DeliveryOrder(new_id, name, address, dis, cos_km, pac_we, ex_fee)
+            new_delivery_order.calculate_delivery_fee()
+            new_delivery_order.classify_delivery()
 
+            manager.add_delivery_order(new_delivery_order)
+            print("Đã thêm đơn hàng thành công!")
+            print(new_delivery_order)
 
+        case "3":
+            id_to_update = input("Nhập vào mã đơn hàng cần cập nhật: ").strip()
+            if not manager.check_id_exists(id_to_update):
+                print("id không tồn tại !")
+                continue
+            else:
+                manager.update_order(id_to_update)
 
-    elif choice =="8":
-        print("Thoát chương trình ...")
-        break
+        case "4":
+            id_to_delete = input("Nhập vào mã đơn hàng cần xóa: ").strip()
+            if not manager.check_id_exists(id_to_delete):
+                print("id không tồn tại !")
+            else:
+                yn = input("Nhập vào Y để xóa, N để quay lại: ").strip().upper()
+                if yn == "Y":
+                    manager.remove_order_by_id(id_to_delete)
+                    print("Đã xóa thành công!")
+                else:
+                    continue
+
+        case "5":
+            id_to_search = input("Nhập vào mã đơn hàng cần tìm kiếm: ").strip()
+            if not manager.check_id_exists(id_to_search):
+                print("id không tồn tại !")
+            else:
+                manager.search_order_delivery(id_to_search)
+
+        case "6":
+            print("Thoát")
+            break
